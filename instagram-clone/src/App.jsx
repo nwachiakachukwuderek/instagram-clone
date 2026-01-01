@@ -1,10 +1,12 @@
 import './App.css';
 import instagramLogo from './IMG/download.webp';
 import Posts from './Posts';
+import ImageUpload from './ImageUpload';
 import { useEffect, useState } from 'react';
-// Import Appwrite services instead of Firebase
-import { account, databases, client } from './appwrite.js'; 
+// Import Appwrite services
+import { account, db, client } from './appwrite.js';
 import { ID, Query } from './appwrite';
+import { APPWRITE_CONFIG } from './constants';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -20,27 +22,43 @@ function App() {
   const [email, setEmail] = useState('');
   const [user, setUser] = useState(null);
 
+  const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+  };
+
   // APPWRITE REALTIME: Fetches and listens for posts
   useEffect(() => {
     // 1. Initial Fetch
     const fetchPosts = async () => {
-      const response = await databases.listDocuments(
-        'YOUR_DATABASE_ID', 
-        'YOUR_COLLECTION_ID',
-        [Query.orderDesc('$createdAt')] // Appwrite uses $createdAt by default
-      );
-      setPosts(response.documents.map(doc => ({ id: doc.$id, post: doc })));
+      try {
+        const response = await db.listDocuments(
+          APPWRITE_CONFIG.DATABASE_ID,
+          APPWRITE_CONFIG.POSTS_COLLECTION_ID,
+          [Query.orderDesc('$createdAt')]
+        );
+        setPosts(response.documents.map(doc => ({ id: doc.$id, post: doc })));
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      }
     };
 
     fetchPosts();
 
-    // 2. Realtime Subscription (Equivalent to onSnapshot)
+    // 2. Realtime Subscription
     const unsubscribe = client.subscribe(
-      `databases.YOUR_DATABASE_ID.collections.YOUR_COLLECTION_ID.documents`, 
+      `databases.${APPWRITE_CONFIG.DATABASE_ID}.collections.${APPWRITE_CONFIG.POSTS_COLLECTION_ID}.documents`,
       (response) => {
         if (response.events.includes("databases.*.collections.*.documents.*.create")) {
-          // If a new post is created, re-fetch or update state
-          fetchPosts(); 
+          // If a new post is created, re-fetch posts
+          fetchPosts();
         }
       }
     );
@@ -48,7 +66,7 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // AUTH: Check for current session (Equivalent to onAuthStateChanged)
+  // AUTH: Check for current session
   useEffect(() => {
     const checkUser = async () => {
       try {
@@ -56,13 +74,11 @@ function App() {
         setUser(session);
       } catch (err) {
         setUser(null);
-        console.log(err)
+        console.log('No active session:', err);
       }
     };
     checkUser();
   }, []);
-
-  const style = { /* ... your existing style ... */ };
 
   // SIGN UP FUNCTION
   const signUp = async (event) => {
@@ -127,7 +143,7 @@ function App() {
               onChange={(e) => setPassword(e.target.value)}
               />
               <Button onClick={signIn} type='submit'>
-                Sign I
+                Sign In
               </Button>
             </form>
         </Box>
@@ -171,14 +187,23 @@ function App() {
    </Modal>
 
       {/* Just change the Logout button to: */}
-      {user ? (
-        <Button onClick={handleLogout}>LogOut</Button>
-      ) : (
-        <div className="app_loginContainer">
-           <Button onClick={() => setOpenSignIn(true)}>Sign In</Button>
-           <Button onClick={() => setOpen(true)}>Sign Up</Button>
-        </div>
-      )}
+      <div className="app_header">
+        <img
+          className='app_headerImage'
+          src={instagramLogo}
+          alt="Instagram Logo"
+        />
+        {user ? (
+          <Button onClick={handleLogout}>Logout</Button>
+        ) : (
+          <div className="app_loginContainer">
+            <Button onClick={() => setOpenSignIn(true)}>Sign In</Button>
+            <Button onClick={() => setOpen(true)}>Sign Up</Button>
+          </div>
+        )}
+      </div>
+
+      {user && <ImageUpload username={user.name || user.email} />}
 
       <div className="app">
       {/* Rendering Posts remains almost identical */}

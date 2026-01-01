@@ -1,17 +1,15 @@
-import React, { useEffect, useState } from 'react'
-import './post.css'
+import React, { useEffect, useState } from 'react';
+import './post.css';
 import Avatar from '@mui/material/Avatar';
 // Import Appwrite config
 import { db, client } from './appwrite.js';
 import { ID, Query } from './appwrite.js';
+import { APPWRITE_CONFIG } from './constants';
 
 function Posts({ postId, username, caption, imageUrl, user }) {
   const [comments, setComments] = useState([]);
   const [comment, setComment] = useState('');
-
-
-  const DATABASE_ID = '694d5b970031eb81aa51';
-  const COMMENTS_COLLECTION_ID = 'YOUR_COMMENTS_COLLECTION_ID';
+  const [posting, setPosting] = useState(false);
 
   useEffect(() => {
     if (!postId) return;
@@ -20,10 +18,10 @@ function Posts({ postId, username, caption, imageUrl, user }) {
     const fetchComments = async () => {
       try {
         const response = await db.listDocuments(
-          DATABASE_ID,
-          'COMMENTS_COLLECTION_ID',
+          APPWRITE_CONFIG.DATABASE_ID,
+          APPWRITE_CONFIG.COMMENTS_COLLECTION_ID,
           [
-            Query.equal('postId', postId), // Only get comments for THIS post
+            Query.equal('postId', postId),
             Query.orderDesc('$createdAt')
           ]
         );
@@ -37,7 +35,7 @@ function Posts({ postId, username, caption, imageUrl, user }) {
 
     // 2. Realtime listener for new comments
     const unsubscribe = client.subscribe(
-      `databases.${DATABASE_ID}.collections.${COMMENTS_COLLECTION_ID}.documents`,
+      `databases.${APPWRITE_CONFIG.DATABASE_ID}.collections.${APPWRITE_CONFIG.COMMENTS_COLLECTION_ID}.documents`,
       (response) => {
         // If a new comment is added to the collection
         if (response.events.includes("databases.*.collections.*.documents.*.create")) {
@@ -55,23 +53,28 @@ function Posts({ postId, username, caption, imageUrl, user }) {
 
   const postComment = async (e) => {
     e.preventDefault();
+    if (!comment.trim()) return;
 
+    setPosting(true);
     try {
       await db.createDocument(
-        DATABASE_ID,
-        COMMENTS_COLLECTION_ID,
+        APPWRITE_CONFIG.DATABASE_ID,
+        APPWRITE_CONFIG.COMMENTS_COLLECTION_ID,
         ID.unique(),
         {
-          text: comment,
-          username: user.name, // In Appwrite, it's usually user.name or user.email
-          postId: postId,      // Manual link to the parent post
+          text: comment.trim(),
+          username: user.name || user.email,
+          postId: postId,
         }
       );
       setComment('');
     } catch (error) {
-      alert(error.message);
+      console.error('Error posting comment:', error);
+      alert(`Failed to post comment: ${error.message}`);
+    } finally {
+      setPosting(false);
     }
-  }
+  };
 
   return (
     <div className='post'>
@@ -93,26 +96,26 @@ function Posts({ postId, username, caption, imageUrl, user }) {
       </div>
 
       {user && (
-        <form className='post_commentBox'>
+        <form className='post_commentBox' onSubmit={postComment}>
           <input
             type="text"
             className='post_input'
-            placeholder='Add Comments Here'
+            placeholder='Add a comment...'
             value={comment}
             onChange={(e) => setComment(e.target.value)}
+            disabled={posting}
           />
           <button
             className='post_button'
-            disabled={!comment}
+            disabled={!comment.trim() || posting}
             type='submit'
-            onClick={postComment}
           >
-            Post
+            {posting ? 'Posting...' : 'Post'}
           </button>
         </form>
       )}
     </div>
-  )
+  );
 }
 
 export default Posts;

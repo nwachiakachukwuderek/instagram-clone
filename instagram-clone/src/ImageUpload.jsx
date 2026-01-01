@@ -1,81 +1,124 @@
-import React, { useState } from 'react'
-import { Button } from '@mui/material'
+import React, { useState, useRef } from 'react';
+import { Button } from '@mui/material';
 // Import Appwrite config
-import { storage, db } from './appwrite'; 
-import { ID } from 'appwrite';
-import './imageupload.css'
+import { storage, db, ID } from './appwrite';
+import { APPWRITE_CONFIG } from './constants';
+import './imageupload.css';
 
 function ImageUpload({ username }) {
     const [caption, setCaption] = useState('');
-    const [progress, setProgress] = useState(0)
-    const [image, setImage] = useState(null)
+    const [progress, setProgress] = useState(0);
+    const [image, setImage] = useState(null);
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef(null);
 
     const handleChange = (e) => {
-        if (e.target.files[0]) {
-            setImage(e.target.files[0])
+        const file = e.target.files[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+            // Validate file size (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('File size must be less than 10MB');
+                return;
+            }
+            setImage(file);
         }
-    }
+    };
 
     const handleUpload = async () => {
-        if (!image) return;
+        if (!image || !caption.trim()) {
+            alert('Please select an image and enter a caption');
+            return;
+        }
+
+        setUploading(true);
+        setProgress(10);
 
         try {
-            // 1. Upload file to Appwrite Storage (Bucket)
-            // You need to create a Bucket in Appwrite Console and get its ID
+            // 1. Upload file to Appwrite Storage
+            setProgress(30);
             const fileUpload = await storage.createFile(
-                'YOUR_BUCKET_ID', 
-                ID.unique(), 
+                APPWRITE_CONFIG.BUCKET_ID,
+                ID.unique(),
                 image
             );
+            console.log('File uploaded:', fileUpload);
 
-            setProgress(100); // Set to 100 once upload finishes
+            setProgress(70);
 
             // 2. Generate the File View URL
-            // This replaces getDownloadURL
-            const downloadURL = storage.getFileView('YOUR_BUCKET_ID', fileUpload.$id);
+            const downloadURL = storage.getFileView(APPWRITE_CONFIG.BUCKET_ID, fileUpload.$id);
+            const imageUrl = typeof downloadURL === 'string' ? downloadURL : downloadURL.href;
+            console.log('Download URL:', imageUrl);
 
             // 3. Add metadata to Appwrite Databases
-            await db.createDocument(
-                'YOUR_DATABASE_ID', 
-                'YOUR_COLLECTION_ID', 
-                ID.unique(), 
+            setProgress(90);
+            const doc = await db.createDocument(
+                APPWRITE_CONFIG.DATABASE_ID,
+                APPWRITE_CONFIG.POSTS_COLLECTION_ID,
+                ID.unique(),
                 {
-                    caption: caption,
-                    imageUrl: downloadURL.href, // Use .href to get the string URL
+                    caption: caption.trim(),
+                    imageUrl: imageUrl,
                     username: username,
-                    // Appwrite automatically adds a $createdAt timestamp, 
-                    // so you don't strictly need serverTimestamp()
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
                 }
             );
+            console.log('Document created:', doc);
+
+            setProgress(100);
 
             // Reset the form
-            setProgress(0);
-            setCaption("");
-            setImage(null);
-            alert("Post uploaded successfully!");
+            setTimeout(() => {
+                setProgress(0);
+                setCaption("");
+                setImage(null);
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
+                setUploading(false);
+                alert("Post uploaded successfully!");
+            }, 1000);
 
         } catch (error) {
-            console.error(error);
-            alert(error.message);
+            console.error('Upload error:', error);
+            alert(`Upload failed: ${error.message}`);
             setProgress(0);
+            setUploading(false);
         }
     };
 
     return (
         <div className='imageupload'>
             <progress value={progress} max='100' className='progress' />
-            <input 
-                type="text" 
-                placeholder='Enter A Caption...' 
+            <input
+                type="text"
+                placeholder='Enter a caption...'
                 value={caption}
-                onChange={event => setCaption(event.target.value)} 
+                onChange={event => setCaption(event.target.value)}
+                disabled={uploading}
             />
-            <input type="file" onChange={handleChange} />
-            <Button onClick={handleUpload}>
-                Upload
+            <input
+                type="file"
+                accept="image/*"
+                onChange={handleChange}
+                disabled={uploading}
+                ref={fileInputRef}
+            />
+            <Button
+                onClick={handleUpload}
+                disabled={uploading || !image || !caption.trim()}
+                variant="contained"
+            >
+                {uploading ? 'Uploading...' : 'Upload'}
             </Button>
         </div>
-    )
+    );
 }
 
 export default ImageUpload;
