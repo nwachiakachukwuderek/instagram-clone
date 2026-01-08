@@ -10,11 +10,13 @@ function ImageUpload({ username }) {
     const [progress, setProgress] = useState(0);
     const [image, setImage] = useState(null);
     const [uploading, setUploading] = useState(false);
+    const [fileName, setFileName] = useState('')
     const fileInputRef = useRef(null);
 
     const handleChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            setFileName(file.name)
             // Validate file type
             if (!file.type.startsWith('image/')) {
                 alert('Please select an image file');
@@ -95,28 +97,33 @@ function ImageUpload({ username }) {
 
     return (
         <div className='imageupload'>
-            <progress value={progress} max='100' className='progress' />
-            <input
+            <form action="">
+                <label htmlFor="file-upload"  id='upload-image'>Choose File</label>
+                <input
                 type="text"
-                placeholder='Enter a caption...'
+                placeholder={fileName || 'Enter a caption...'}
                 value={caption}
                 onChange={event => setCaption(event.target.value)}
                 disabled={uploading}
-            />
-            <input
+                id='upload-text'
+                />
+                <input
+                id='file-upload'
                 type="file"
                 accept="image/*"
                 onChange={handleChange}
                 disabled={uploading}
                 ref={fileInputRef}
-            />
+                />
+            </form>
             <Button
                 onClick={handleUpload}
                 disabled={uploading || !image || !caption.trim()}
                 variant="contained"
-            >
+                >
                 {uploading ? 'Uploading...' : 'Upload'}
-            </Button>
+                </Button>
+            <progress value={progress} max='100' className='progress'/>
         </div>
     );
 }

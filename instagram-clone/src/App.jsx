@@ -1,5 +1,5 @@
 import './App.css';
-import instagramLogo from './IMG/download.webp';
+import instagramLogo from './IMG/downloadnew.png';
 import Posts from './Posts';
 import ImageUpload from './ImageUpload';
 import { useEffect, useState } from 'react';
@@ -72,6 +72,7 @@ function App() {
       try {
         const session = await account.get();
         setUser(session);
+        // You can use this session object to get the entire session but you dont need it you can just fetch what you want
       } catch (err) {
         setUser(null);
         console.log('No active session:', err);
@@ -187,13 +188,21 @@ function App() {
    </Modal>
 
       {/* Just change the Logout button to: */}
+
+
+      <div className="app">
+      {/* Rendering Posts remains almost identical */}
       <div className="app_header">
-        <img
+        <div className="info">
+        <span>
+           <img
           className='app_headerImage'
           src={instagramLogo}
           alt="Instagram Logo"
         />
-        {user ? (
+        </span>
+        <span>
+          {user ? (
           <Button onClick={handleLogout}>Logout</Button>
         ) : (
           <div className="app_loginContainer">
@@ -201,32 +210,33 @@ function App() {
             <Button onClick={() => setOpen(true)}>Sign Up</Button>
           </div>
         )}
-      </div>
-
-      {user && <ImageUpload username={user.name || user.email} />}
-
-      <div className="app">
-      {/* Rendering Posts remains almost identical */}
-      <div className="app_postLeft">
-      <div className="app_posts">
-        {posts.map(({ id, post }) => (
-          <Posts 
-            key={id} 
-            postId={id} 
-            username={post.username} 
-            imageUrl={post.imageUrl} 
-            caption={post.caption} 
-            user={user} 
-          />
-        ))}
-      </div>
-      </div>
-
-      <div className="app_postsRight">
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <InstagramEmbed url="https://www.instagram.com/p/CUbHfhpswxt/" width={328} />
+        </span>
         </div>
+        {user && <ImageUpload username={user.name || user.email} />}
       </div>
+     
+        <div className="app_bottom">
+          <div className="app_postLeft">
+          <div className="app_posts">
+            {posts.map(({ id, post }) => (
+              <Posts 
+                key={id} 
+                postId={id} 
+                username={post.username} 
+                imageUrl={post.imageUrl} 
+                caption={post.caption} 
+                user={user} 
+              />
+            ))}
+          </div>
+          </div>
+
+          <div className="app_postsRight">
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <InstagramEmbed url="https://www.instagram.com/p/CUbHfhpswxt/" width={328} />
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );
