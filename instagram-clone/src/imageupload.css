@@ -1,14 +1,11 @@
 .imageupload{
   position: fixed;
   bottom: 0px;
-  background-color: white;
+  background-color: gray;
   width: 100%;
-  justify-content: center;
-  align-content: center;
   text-align: center;
   justify-items: center;
-  align-items: center;
-  z-index: 10;
+
 }
 
 #file-upload{
@@ -16,31 +13,31 @@
 }
 
 form {
-  border: 1px solid black;
-  margin: 10px;
   display: flex;
-  width: 50%;
+  width: 75%;
+  outline: none;
+  padding: 5px;
 }
 
 #upload-text{
   flex: 1;
   outline: none;
-  font-size: 15px;
+  font-size: 2vh;
 }
 
 #upload-image{
-  background: black;
+  background: rgb(89, 81, 81);
   color: white;
-  padding: 10px;
+  padding: 5px;
   font-size: 20px;
 }
 
-button{
+.progress {
   width: 50%;
   display: flex;
 }
 
-.progress {
+button {
   width: 50%;
   display: flex;
 }

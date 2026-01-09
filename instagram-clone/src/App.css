@@ -2,8 +2,11 @@
   margin: 0;
 }
 
+body {
+    background-color: rgba(9, 18, 31, 0.581);
+}
+
 .app {
-  background-color: rgba(9, 18, 31, 0.581);
   border-top: 1px solid lightgray;
   display: flex;
   flex-direction: column;
@@ -39,10 +42,12 @@
   padding: 20px;
 }
 
-.app_postsRight{
-  position: sticky;
-  top: 0px;
+.app_bottom {
+  display: flex;
+  justify-content: center;
+  margin-top: 75px;
 }
+
 
 .app_headerImage {
   /* this objects keeps the aspect ratio in check */
@@ -52,8 +57,3 @@
   display: flex;
 }
 
-.app_signup {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}

@@ -27,11 +27,13 @@ function App() {
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 400,
+    width: '400px',
     bgcolor: 'background.paper',
     border: '2px solid #000',
     boxShadow: 24,
     p: 4,
+    display: 'flex',
+    flexDirection: 'column'
   };
 
   // APPWRITE REALTIME: Fetches and listens for posts
@@ -231,11 +233,11 @@ function App() {
           </div>
           </div>
 
-          <div className="app_postsRight">
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
+          {/* <div className="app_postsRight">
+            <div>
               <InstagramEmbed url="https://www.instagram.com/p/CUbHfhpswxt/" width={328} />
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </>
