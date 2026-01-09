@@ -1,5 +1,5 @@
 import './App.css';
-import instagramLogo from './IMG/downloadnew.png';
+import instagramLogo from './IMG/Gemini.png';
 import Posts from './Posts';
 import ImageUpload from './ImageUpload';
 import { useEffect, useState } from 'react';
@@ -216,8 +216,13 @@ function App() {
         </div>
         {user && <ImageUpload username={user.name || user.email} />}
       </div>
-     
         <div className="app_bottom">
+          <div className="app_postsRight">
+            <div>
+              <InstagramEmbed url="https://www.instagram.com/p/CUbHfhpswxt/" width={328} />
+            </div>
+          </div>
+
           <div className="app_postLeft">
           <div className="app_posts">
             {posts.map(({ id, post }) => (
@@ -232,12 +237,6 @@ function App() {
             ))}
           </div>
           </div>
-
-          {/* <div className="app_postsRight">
-            <div>
-              <InstagramEmbed url="https://www.instagram.com/p/CUbHfhpswxt/" width={328} />
-            </div>
-          </div> */}
         </div>
       </div>
     </>

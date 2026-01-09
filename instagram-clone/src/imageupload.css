@@ -5,6 +5,7 @@
   width: 100%;
   text-align: center;
   justify-items: center;
+  z-index: 20;
 
 }
 
@@ -12,7 +13,7 @@
   display: none;
 }
 
-form {
+.imageupload-form {
   display: flex;
   width: 75%;
   outline: none;
@@ -37,7 +38,11 @@ form {
   display: flex;
 }
 
-button {
+.button-upload {
   width: 50%;
   display: flex;
+}
+
+#upload-image:hover {
+  background-color: black;
 }

@@ -97,7 +97,7 @@ function ImageUpload({ username }) {
 
     return (
         <div className='imageupload'>
-            <form action="">
+            <form action="" className='imageupload-form'>
                 <label htmlFor="file-upload"  id='upload-image'>Choose File</label>
                 <input
                 type="text"
@@ -120,6 +120,7 @@ function ImageUpload({ username }) {
                 onClick={handleUpload}
                 disabled={uploading || !image || !caption.trim()}
                 variant="contained"
+                className='button-upload'
                 >
                 {uploading ? 'Uploading...' : 'Upload'}
                 </Button>
