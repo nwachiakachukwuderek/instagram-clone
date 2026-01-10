@@ -4,7 +4,7 @@ import Posts from './Posts';
 import ImageUpload from './ImageUpload';
 import { useEffect, useState } from 'react';
 // Import Appwrite services
-import { account, db, client, storage } from './appwrite.js';
+import { account, db, client } from './appwrite.js';
 import { ID, Query } from './appwrite';
 import { APPWRITE_CONFIG } from './constants';
 import Modal from '@mui/material/Modal';
@@ -119,8 +119,6 @@ function App() {
     setUser(null);
   };
 
-  const imageUrl = storage.getFilePreview('bucketID', posts.imageID)
-
   return (
     <>
     <Modal
@@ -232,7 +230,7 @@ function App() {
                 key={id} 
                 postId={id} 
                 username={post.username} 
-                imageUrl={imageUrl} 
+                imageUrl={post.imageUrl} 
                 caption={post.caption} 
                 user={user} 
               />
